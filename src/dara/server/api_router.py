@@ -45,7 +45,7 @@ async def submit(
         with tempfile.NamedTemporaryFile() as temp:
             temp.write(pattern_file.file.read())
             temp.seek(0)
-            if name.endswith(".xy") or name.endswith(".txt") or name.endswith(".xye"):  # noqa: PIE810
+            if name.endswith((".xy", ".txt", ".xye")):
                 pattern = XYFile.from_file(temp.name)
             elif name.endswith(".xrdml"):
                 pattern = XRDMLFile.from_file(temp.name)
@@ -66,7 +66,13 @@ async def submit(
                 for phase in additional_phases:
                     with open(temp_dir / phase.filename, "wb") as f:
                         shutil.copyfileobj(phase.file, f)
-                        additional_cifs.append(Cif.from_file(temp_dir / phase.filename))
+                    cif_file = Cif.from_file(temp_dir / phase.filename)
+                    if not cif_file.data:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Invalid additional CIF file provided",
+                        )
+                    additional_cifs.append(Cif.from_file(temp_dir / phase.filename))
         else:
             additional_cifs = None
 
