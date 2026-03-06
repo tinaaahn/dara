@@ -46,7 +46,7 @@ function HeaderMenu() {
         <Link to='/tutorial'>Tutorial</Link>
       </Menu.Item>
       <Menu.Item key='doc' title='Documentation'>
-        <a href="https://idocx.github.io/dara/" target="_blank" rel="noopener noreferrer">Documentation</a>
+        <a href="https://CederGroupHub.github.io/dara/" target="_blank" rel="noopener noreferrer">Documentation</a>
       </Menu.Item>
     </StyledMenu>
   )
