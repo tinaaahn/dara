@@ -1,10 +1,9 @@
-![DARA logo](https://github.com/idocx/dara/blob/main/logo/dara.jpg?raw=true)
+![DARA logo](https://github.com/CederGroupHub/dara/blob/main/logo/dara.jpg?raw=true)
 
 # DARA: Data-driven automated Rietveld analysis for phase search and refinement
-[![GitHub licence](https://img.shields.io/github/license/idocx/dara)](https://github.com/idocx/dara/blob/main/LICENSE)
-[![arXiv:2510.19667](https://img.shields.io/badge/arXiv-2510.19667-b31b1b?logo=arXiv&logoColor=white)](https://arxiv.org/abs/2510.19667)
-[![Pytest](https://github.com/idocx/dara/actions/workflows/pytest.yaml/badge.svg?branch=main)](https://github.com/idocx/dara/actions/workflows/pytest.yaml)
-[![Ruff Check](https://github.com/idocx/dara/actions/workflows/ruff.yaml/badge.svg?branch=main)](https://github.com/idocx/dara/actions/workflows/ruff.yaml)
+[![GitHub licence](https://img.shields.io/github/license/CederGroupHub/dara)](https://github.com/CederGroupHub/dara/blob/main/LICENSE)
+[![DOI](https://img.shields.io/badge/DOI-10.1021%2Facs.chemmater.5c02820-blue)](https://doi.org/10.1021/acs.chemmater.5c02820)[![Pytest](https://github.com/CederGroupHub/dara/actions/workflows/pytest.yaml/badge.svg?branch=main)](https://github.com/CederGroupHub/dara/actions/workflows/pytest.yaml)
+[![Ruff Check](https://github.com/CederGroupHub/dara/actions/workflows/ruff.yaml/badge.svg?branch=main)](https://github.com/CederGroupHub/dara/actions/workflows/ruff.yaml)
 
 Automated phase search with BGMN.
 ## Installation

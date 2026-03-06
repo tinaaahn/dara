@@ -17,7 +17,7 @@ authors:
 identifiers:
   - type: doi
     value: "10.1021/acs.chemmater.5c02820"
-repository-code: "https://github.com/idocx/dara"
+repository-code: "https://github.com/CederGroupHub/dara"
 abstract: |
   Powder X‑ray diffraction (XRD) is a foundational technique for characterizing
   crystalline materials. However, interpreting XRD patterns, particularly in

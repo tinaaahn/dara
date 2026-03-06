@@ -242,7 +242,7 @@ function TaskPage({ location }) {
         <Title>
         <h2>Task {task_id}</h2>
         <div>
-          <Button type="primary" href={`https://github.com/idocx/dara/issues/new`} target="_blank">Open Github Issue</Button>
+          <Button type="primary" href={`https://github.com/CederGroupHub/dara/issues/new`} target="_blank">Open Github Issue</Button>
         </div>
         </Title>
         {

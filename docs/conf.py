@@ -70,7 +70,7 @@ exclude_patterns = []
 html_theme = "sphinx_book_theme"
 
 html_theme_options = {
-    "repository_url": "https://github.com/idocx/dara",
+    "repository_url": "https://github.com/CederGroupHub/dara",
     "repository_branch": "docs",
     "use_repository_button": True,
     "home_page_in_toc": True,
@@ -87,7 +87,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/idocx/dara",
+            "url": "https://github.com/CederGroupHub/dara",
             "icon": "fa-brands fa-github",
         },
     ],
