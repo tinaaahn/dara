@@ -17,7 +17,7 @@ def download_bgmn():
         raise Exception("Unsupported OS: " + os_name + ".")
 
     # get url
-    URL = f"https://www.ocf.berkeley.edu/~yuxingfei/bgmn/bgmnwin_{os_name}.zip"
+    URL = f"https://cedergrouphub.github.io/dara/_static/bgmnwin_{os_name}.zip"
 
     # download
     r = requests.get(URL, stream=True, timeout=30)
