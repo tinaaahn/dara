@@ -623,6 +623,7 @@ class BaseSearchTree(Tree):
         list[tuple[RefinementPhase, ...]],
         list[tuple[float, ...]],
         list[tuple[float, ...]],
+        int,
     ]:
         """
         Get all the phase combinations at this node.
@@ -665,12 +666,13 @@ class BaseSearchTree(Tree):
             tuple([node.data.current_phases[-1] for node in possible_nodes])
             for possible_nodes in all_possible_nodes[1:]
         ]
+        number_of_pinned_phases = len(all_possible_nodes[0][0].data.current_phases)
         lattice_strains = [
             tuple([node.data.lattice_strain or 0 for node in possible_nodes])
             for possible_nodes in all_possible_nodes
         ]
 
-        return phases, foms, lattice_strains
+        return phases, foms, lattice_strains, number_of_pinned_phases
 
     def score_phases(
         self,
@@ -1226,12 +1228,19 @@ class SearchTree(BaseSearchTree):
                 child.data.status not in {"expanded", "max_depth"}
                 for child in self.children(node.identifier)
             ):
-                phases, foms, lattice_strains = self.get_phase_combinations(node)
+                (
+                    phases,
+                    foms,
+                    lattice_strains,
+                    number_of_pinned_phases,
+                ) = self.get_phase_combinations(node)
 
                 # if express mode is on, we will expand the phases based on the grouping result
                 # to include all the similar phases
                 if self.express_mode:
-                    for i, phases_ in enumerate(phases):
+                    for i, phases_ in enumerate(
+                        phases[number_of_pinned_phases:], start=number_of_pinned_phases
+                    ):
                         new_phases_ = []
                         new_foms_ = []
                         new_lattice_strains_ = []
