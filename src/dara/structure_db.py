@@ -1,12 +1,13 @@
 """Interact with the (local) ICSD database."""
 
+
 from __future__ import annotations
 
 import itertools
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-
+import os
 import requests
 from monty.json import MSONable
 from monty.serialization import loadfn
@@ -17,6 +18,7 @@ from dara.cif import Cif
 from dara.data import COMMON_GASES
 from dara.settings import DaraSettings
 from dara.utils import copy_and_rename_files, get_logger
+
 
 logger = get_logger(__name__)
 
@@ -292,25 +294,57 @@ class CODDatabase(StructureDatabase):
         """Name of the database."""
         return "cod"
 
+
     @staticmethod
     def _download_cod(cod_id: str) -> Cif:
         """Download a COD file from its ID."""
-        COD_URL = "https://www.crystallography.net/cod/{cod_id}.cif"
-        # Get the content of the URL
+        import os
+        COD_URL = "https://qiserver.ugr.es/cod/{cod_id}.cif"
+
+        temp_path = None
         try:
             url = COD_URL.format(cod_id=cod_id)
             response = requests.get(url, timeout=30)
-            response.raise_for_status()  # Raise an error for bad status codes
-            with NamedTemporaryFile(mode="w+b") as temp_file:
+            response.raise_for_status()
+
+            with NamedTemporaryFile(mode="w+b", suffix=".cif", delete=False) as temp_file:
                 temp_file.write(response.content)
                 temp_file.flush()
-                cif = Cif.from_file(temp_file.name)
+                temp_path = temp_file.name
+
+            cif = Cif.from_file(temp_path)
             cif.filename = str(cod_id)
+
         except Exception as e:
             print(f"Failed to download {cod_id}: {e}")
             raise
 
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except Exception:
+                    pass
+
         return cif
+    # def _download_cod(cod_id: str) -> Cif:
+    #     """Download a COD file from its ID."""
+    #     COD_URL = "http://qiserver.ugr.es/cod/{cod_id}.cif"
+    #     # Get the content of the URL
+    #     try:
+    #         url = COD_URL.format(cod_id=cod_id)
+    #         response = requests.get(url, timeout=30)
+    #         response.raise_for_status()  # Raise an error for bad status codes
+    #         with NamedTemporaryFile(mode="w+b") as temp_file:
+    #             temp_file.write(response.content)
+    #             temp_file.flush()
+    #             cif = Cif.from_file(temp_file.name)
+    #         cif.filename = str(cod_id)
+    #     except Exception as e:
+    #         print(f"Failed to download {cod_id}: {e}")
+    #         raise
+
+    #     return cif
 
 
 class ICSDDatabase(StructureDatabase):

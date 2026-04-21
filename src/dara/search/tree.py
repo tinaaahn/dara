@@ -18,10 +18,9 @@ from dara import do_refinement_no_saving
 from dara.cif2str import CIF2StrError
 from dara.peak_detection import detect_peaks
 from dara.refine import RefinementPhase
-from dara.search.data_model import PeakMatchingStrategy, SearchNodeData, SearchResult
+from dara.search.data_model import SearchNodeData, SearchResult
 from dara.search.peak_matcher import PeakMatcher
 from dara.utils import (
-    estimate_rpb_threshold,
     find_optimal_intensity_threshold,
     find_optimal_score_threshold,
     get_logger,
@@ -31,7 +30,6 @@ from dara.utils import (
     parse_refinement_param,
     rpb,
 )
-from dara.xrd import load_pattern
 
 if TYPE_CHECKING:
     from dara.result import RefinementResult
@@ -78,8 +76,20 @@ def remote_do_refinement_no_saving(
 def remote_peak_matching(
     batch: list[tuple[np.ndarray, np.ndarray]],
     return_type: Literal["PeakMatcher", "score", "jaccard"],
-    score_kwargs: dict[str, float] | None = None,
 ) -> list[PeakMatcher | float]:
+    import os
+    import socket
+    import sys
+
+    print(
+        "RAY WORKER DEBUG",
+        {
+            "worker_pid": os.getpid(),
+            "worker_host": socket.gethostname(),
+            "worker_python": sys.executable,
+        },
+        flush=True,
+    )
     results = []
 
     for peak_calc, peak_obs in batch:
@@ -88,7 +98,7 @@ def remote_peak_matching(
         if return_type == "PeakMatcher":
             results.append(pm)
         elif return_type == "score":
-            results.append(pm.score(**(score_kwargs or {})))
+            results.append(pm.score())
         elif return_type == "jaccard":
             results.append(pm.jaccard_index())
         else:
@@ -102,7 +112,6 @@ def batch_peak_matching(
     peak_obs: np.ndarray | list[np.ndarray],
     return_type: Literal["PeakMatcher", "score", "jaccard"] = "PeakMatcher",
     batch_size: int = 100,
-    score_kwargs: dict[str, float] | None = None,
 ) -> list[PeakMatcher | float]:
     if isinstance(peak_obs, np.ndarray):
         peak_obs = [peak_obs] * len(peak_calcs)
@@ -115,8 +124,7 @@ def batch_peak_matching(
         all_data[i : i + batch_size] for i in range(0, len(all_data), batch_size)
     ]
     handles = [
-        remote_peak_matching.remote(batch, return_type=return_type, score_kwargs=score_kwargs)
-        for batch in batches
+        remote_peak_matching.remote(batch, return_type=return_type) for batch in batches
     ]
     return sum(ray.get(handles), [])
 
@@ -387,14 +395,10 @@ class BaseSearchTree(Tree):
         rpb_threshold: float,
         pinned_phases: list[RefinementPhase] | None = None,
         record_peak_matcher_scores: bool = False,
-        peak_matching_strategy: PeakMatchingStrategy | None = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-
-        if peak_matching_strategy is None:
-            peak_matching_strategy = PeakMatchingStrategy.default_tree()
 
         self.pattern_path = pattern_path
         self.rpb_threshold = rpb_threshold
@@ -408,7 +412,6 @@ class BaseSearchTree(Tree):
         self.max_phases = max_phases
         self.pinned_phases = pinned_phases
         self.record_peak_matcher_scores = record_peak_matcher_scores
-        self.peak_matching_strategy = peak_matching_strategy
 
         self.all_phases_result = all_phases_result
         self.peak_obs = peak_obs
@@ -633,7 +636,6 @@ class BaseSearchTree(Tree):
         list[tuple[RefinementPhase, ...]],
         list[tuple[float, ...]],
         list[tuple[float, ...]],
-        int,
     ]:
         """
         Get all the phase combinations at this node.
@@ -664,10 +666,8 @@ class BaseSearchTree(Tree):
         all_possible_nodes = all_possible_nodes[::-1]
 
         foms = [
-            (0,) for _pinned_phases in all_possible_nodes[0][0].data.current_phases
-        ] + [
             tuple([node.data.fom or 0 for node in possible_nodes])
-            for possible_nodes in all_possible_nodes[1:]
+            for possible_nodes in all_possible_nodes
         ]
         phases = [
             (pinned_phase,)
@@ -679,14 +679,11 @@ class BaseSearchTree(Tree):
             for possible_nodes in all_possible_nodes[1:]
         ]
         lattice_strains = [
-            (0,) for _pinned_phases in all_possible_nodes[0][0].data.current_phases
-        ] + [
             tuple([node.data.lattice_strain or 0 for node in possible_nodes])
-            for possible_nodes in all_possible_nodes[1:]
+            for possible_nodes in all_possible_nodes
         ]
-        number_of_pinned_phases = len(all_possible_nodes[0][0].data.current_phases)
 
-        return phases, foms, lattice_strains, number_of_pinned_phases
+        return phases, foms, lattice_strains
 
     def score_phases(
         self,
@@ -736,9 +733,8 @@ class BaseSearchTree(Tree):
                 )
             )
 
-            score_kwargs = self.peak_matching_strategy.as_kwargs()
             scores = {
-                k: v.score(**score_kwargs) if v is not None else 0 for k, v in peak_matchers.items()
+                k: v.score() if v is not None else 0 for k, v in peak_matchers.items()
             }
 
             raw_scores = {}
@@ -775,10 +771,7 @@ class BaseSearchTree(Tree):
             scores = dict(
                 zip_longest(
                     all_phases_result.keys(),
-                    batch_peak_matching(
-                        peak_calcs, missing_peaks, return_type="score",
-                        score_kwargs=self.peak_matching_strategy.as_kwargs(),
-                    ),
+                    batch_peak_matching(peak_calcs, missing_peaks, return_type="score"),
                     fillvalue=0,
                 )
             )
@@ -897,7 +890,6 @@ class BaseSearchTree(Tree):
             maximum_grouping_distance=search_tree.maximum_grouping_distance,
             pinned_phases=search_tree.pinned_phases,
             record_peak_matcher_scores=search_tree.record_peak_matcher_scores,
-            peak_matching_strategy=search_tree.peak_matching_strategy,
         )
         new_search_tree.add_node(root_node)
 
@@ -957,25 +949,12 @@ class SearchTree(BaseSearchTree):
         enable_angular_cut: bool = True,
         maximum_grouping_distance: float = 0.1,
         max_phases: float = 5,
-        rpb_threshold: float | None = None,
+        rpb_threshold: float = 4,
         record_peak_matcher_scores: bool = False,
-        peak_matching_strategy: PeakMatchingStrategy | None = None,
         *args,
         **kwargs,
     ):
         pattern_path = Path(pattern_path)
-
-        if peak_matching_strategy is None:
-            peak_matching_strategy = PeakMatchingStrategy.default_tree()
-
-        # Auto-determine rpb_threshold from pattern SNR if not provided
-        if rpb_threshold is None:
-            xrd = load_pattern(pattern_path)
-            rpb_threshold = estimate_rpb_threshold(xrd.intensities)
-            logger.info(
-                f"rpb_threshold automatically set to {rpb_threshold:.2f} "
-                f"based on pattern SNR."
-            )
 
         # remove duplicates
         self.cif_paths = list(
@@ -1008,7 +987,6 @@ class SearchTree(BaseSearchTree):
             rpb_threshold,
             self.pinned_phases,
             record_peak_matcher_scores,
-            peak_matching_strategy,
             *args,
             **kwargs,
         )
@@ -1261,19 +1239,12 @@ class SearchTree(BaseSearchTree):
                 child.data.status not in {"expanded", "max_depth"}
                 for child in self.children(node.identifier)
             ):
-                (
-                    phases,
-                    foms,
-                    lattice_strains,
-                    number_of_pinned_phases,
-                ) = self.get_phase_combinations(node)
+                phases, foms, lattice_strains = self.get_phase_combinations(node)
 
                 # if express mode is on, we will expand the phases based on the grouping result
                 # to include all the similar phases
                 if self.express_mode:
-                    for i, phases_ in enumerate(
-                        phases[number_of_pinned_phases:], start=number_of_pinned_phases
-                    ):
+                    for i, phases_ in enumerate(phases):
                         new_phases_ = []
                         new_foms_ = []
                         new_lattice_strains_ = []

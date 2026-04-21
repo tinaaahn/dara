@@ -1,0 +1,94 @@
+
+
+SAVE=N
+
+%-----------------------------------------------------------------------------------------------
+% Output files for Geomet and MakeGeq
+%-----------------------------------------------------------------------------------------------
+
+VERZERR=made_up.ger
+GEQ=made_up.geq
+
+%-----------------------------------------------------------------------------------------------
+% Goniometer
+%-----------------------------------------------------------------------------------------------
+
+% Instrument geometry
+GEOMETRY=REFLEXION
+
+% Goniometer radius (mm)
+R=200.5
+
+%-----------------------------------------------------------------------------------------------
+% X-ray tube
+%-----------------------------------------------------------------------------------------------
+
+% Axial dimension (length, mm)
+FocusH=0.04
+
+% Optical breadth (1/10 of the nominal) of the line focus (mm)
+FocusW=12.0000
+
+%-----------------------------------------------------------------------------------------------
+% Divergence slit
+%-----------------------------------------------------------------------------------------------
+
+% Distance from sample (mm)
+HSlitR=0.00
+
+% Divergence slit width (mm)
+HSlitW=0.0000
+
+%-----------------------------------------------------------------------------------------------
+% Sample
+%-----------------------------------------------------------------------------------------------
+
+% Diameter of round sample (mm)
+SamplD=0.00
+
+%-----------------------------------------------------------------------------------------------
+% Detector
+%-----------------------------------------------------------------------------------------------
+
+% Total sensor height (mm)
+DetArrayW=14.40
+
+% Height of one strip (mm)
+DetW=0.0750
+
+% Total axial detector width (mm)
+DetH=16.00
+
+%-----------------------------------------------------------------------------------------------
+% Parameters for the simulation of the profile function
+%-----------------------------------------------------------------------------------------------
+
+% angular positions for the MonteCarlo simulation (deg 2theta)
+zweiTheta[1]=5
+zweiTheta[2]=12
+zweiTheta[3]=21
+zweiTheta[4]=32
+zweiTheta[5]=45
+zweiTheta[6]=59
+zweiTheta[7]=74
+zweiTheta[8]=80
+
+% angular range (deg 2theta)
+WMIN=5
+WMAX=80
+
+% step width for the interpolation of the geometric profiles (deg 2theta)
+WSTEP=2*sin(pi*zweiTheta/180)
+
+% switch for applying the intensity correction for beam overflow resp. ADS function
+GSUM=Y
+
+% Use multithreaded calculation
+NTHREADS=8
+
+% Convenience function: Calculate PI for use in other angle-dependent calculations
+pi=2*acos(0)
+
+%-----------------------------------------------------------------------------------------------
+% End of file
+%-----------------------------------------------------------------------------------------------

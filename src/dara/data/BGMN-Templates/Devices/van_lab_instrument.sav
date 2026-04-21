@@ -1,0 +1,137 @@
+%***********************************************************************************************
+%
+%    BGMN Device Configuration File
+%    ------------------------------
+%
+%    Adapted using the following target parameters:
+%    Rp = 200.5
+%    Rs = 200.5
+%    lpsd_th2_angular_range_degrees = 3
+%    lpsd_equitorial_divergence_degrees = 0.299999
+%    filament_length = 12
+%    sample_length = 15
+%    receiving_slit_length = 12
+%    primary_soller_angle = 2.5
+%    secondary_soller_angle = 2.5
+%    axial_n_beta = 30
+%
+%***********************************************************************************************
+
+SAVE=N
+
+%-----------------------------------------------------------------------------------------------
+% Output files for Geomet and MakeGeq
+%-----------------------------------------------------------------------------------------------
+
+VERZERR=van_lab_instrument.ger
+GEQ=van_lab_instrument.geq
+
+%-----------------------------------------------------------------------------------------------
+% Goniometer
+%-----------------------------------------------------------------------------------------------
+
+GEOMETRY=REFLEXION
+
+% Goniometer radius (mm)
+R=200.5
+
+%-----------------------------------------------------------------------------------------------
+% X-ray tube
+%-----------------------------------------------------------------------------------------------
+
+% Axial dimension (length, mm)
+FocusH=12.00
+
+% Optical breadth / effective line focus width (mm)
+% Not provided in the short file, so keeping previous value unless you want to change it
+FocusW=1.5000
+
+%-----------------------------------------------------------------------------------------------
+% Divergence slit
+%-----------------------------------------------------------------------------------------------
+
+% Beam divergence (degrees)
+div=0.299999
+
+% Distance from sample (mm)
+% Not specified in short file, kept from original
+HSlitR=24.00
+
+% Divergence slit width (mm)
+HSlitW=2*tan(div*pi/360)*(R-HSlitR)
+
+%-----------------------------------------------------------------------------------------------
+% Primary collimator (Soller slit)
+%-----------------------------------------------------------------------------------------------
+
+% Beam divergence (radians) = 2.5 degrees
+PColl=2.5*pi/180
+
+%-----------------------------------------------------------------------------------------------
+% Sample
+%-----------------------------------------------------------------------------------------------
+
+% Effective sample length / diameter (mm)
+SamplD=15.00
+
+%-----------------------------------------------------------------------------------------------
+% Anti-scatter slit
+%-----------------------------------------------------------------------------------------------
+
+% Using same equatorial divergence as provided
+adiv=0.299999
+
+% Distance from sample (mm)
+SSlitR=24.00
+
+% Anti-scatter slit width (mm)
+SSlitW=2*tan(adiv*pi/360)*(R-SSlitR)
+
+%-----------------------------------------------------------------------------------------------
+% Secondary collimator (Soller slit)
+%-----------------------------------------------------------------------------------------------
+
+% Beam divergence (radians) = 2.5 degrees
+SColl=2.5*pi/180
+
+%-----------------------------------------------------------------------------------------------
+% Detector
+%-----------------------------------------------------------------------------------------------
+
+% Total sensor height / receiving slit length (mm)
+DetArrayW=12.00
+
+% Height of one strip (mm)
+% Not specified in the short file, kept from original
+DetW=0.0750
+
+% Total axial detector width (mm)
+DetH=12.00
+
+%-----------------------------------------------------------------------------------------------
+% Parameters for the simulation of the profile function
+%-----------------------------------------------------------------------------------------------
+
+zweiTheta[1]=5
+zweiTheta[2]=12
+zweiTheta[3]=21
+zweiTheta[4]=32
+zweiTheta[5]=45
+zweiTheta[6]=59
+zweiTheta[7]=74
+zweiTheta[8]=81
+
+WMIN=5
+WMAX=81
+
+WSTEP=2*sin(pi*zweiTheta/180)
+
+GSUM=Y
+
+NTHREADS=8
+
+pi=2*acos(0)
+
+%-----------------------------------------------------------------------------------------------
+% End of file
+%-----------------------------------------------------------------------------------------------

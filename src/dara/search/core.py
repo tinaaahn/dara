@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Literal
 
 import ray
 
-from dara.search.data_model import PeakMatchingStrategy
 from dara.search.tree import BaseSearchTree, SearchTree
 
 if TYPE_CHECKING:
@@ -27,7 +26,6 @@ DEFAULT_PHASE_PARAMS = {
     "rp": 4,
 }
 DEFAULT_REFINEMENT_PARAMS = {"n_threads": 8, "eps1": 0, "eps2": "0_-0.05^0.05"}
-DEFAULT_PEAK_MATCHING_STRATEGY = PeakMatchingStrategy.default()
 
 
 @ray.remote
@@ -60,9 +58,7 @@ def search_phases(
     refinement_params: dict[str, ...] | None = None,
     return_search_tree: bool = False,
     record_peak_matcher_scores: bool = False,
-    rpb_threshold: float | None = None,
-    peak_matching_strategy: PeakMatchingStrategy
-    | tuple[float, float, float, float] = DEFAULT_PEAK_MATCHING_STRATEGY,
+    rpb_threshold: float = 2,
 ) -> list[SearchResult] | SearchTree:
     """
     Search for the best phases to use for refinement.
@@ -84,15 +80,8 @@ def search_phases(
         return_search_tree: whether to return the search tree. This is mainly used for debugging purposes.
         record_peak_matcher_scores: whether to record the peak matcher scores. This is mainly used for
             debugging purposes.
-        rpb_threshold: the RPB threshold. If None, it will be automatically determined based on the pattern's SNR.
-        peak_matching_strategy: the coefficients for peak matching score calculation. Can be a
-            PeakMatchingStrategy model or a tuple of four floats
-            (matched_coeff, wrong_intensity_coeff, missing_coeff, extra_coeff).
-            If None, the default coefficients will be used.
+        rpb_threshold: the RPB threshold
     """
-    if not isinstance(peak_matching_strategy, PeakMatchingStrategy):
-        peak_matching_strategy = PeakMatchingStrategy.from_tuple(peak_matching_strategy)
-
     if phase_params is None:
         phase_params = {}
 
@@ -119,7 +108,6 @@ def search_phases(
         max_phases=max_phases,
         rpb_threshold=rpb_threshold,
         record_peak_matcher_scores=record_peak_matcher_scores,
-        peak_matching_strategy=peak_matching_strategy,
     )
 
     max_worker = ray.cluster_resources()["CPU"]

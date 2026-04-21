@@ -19,63 +19,6 @@ from dara.utils import (
 )
 
 
-class PeakMatchingStrategy(BaseModel, frozen=True):
-    """Coefficients for peak matching score calculation.
-
-    Args:
-        matched_coeff: the coefficient of the matched peaks
-        wrong_intensity_coeff: the coefficient of the peaks with wrong intensities
-        missing_coeff: the coefficient of the missing peaks
-        extra_coeff: the coefficient of the extra peaks
-    """
-
-    matched_coeff: float
-    wrong_intensity_coeff: float
-    missing_coeff: float
-    extra_coeff: float
-
-    @classmethod
-    def from_tuple(
-        cls, coeffs: tuple[float, float, float, float]
-    ) -> PeakMatchingStrategy:
-        """Create from a tuple of (matched_coeff, wrong_intensity_coeff, missing_coeff, extra_coeff)."""
-        return cls(
-            matched_coeff=coeffs[0],
-            wrong_intensity_coeff=coeffs[1],
-            missing_coeff=coeffs[2],
-            extra_coeff=coeffs[3],
-        )
-
-    @classmethod
-    def default(cls) -> PeakMatchingStrategy:
-        """Return the default strategy used in search_phases."""
-        return cls(
-            matched_coeff=1.0,
-            wrong_intensity_coeff=1.0,
-            missing_coeff=-0.05,
-            extra_coeff=-0.5,
-        )
-
-    @classmethod
-    def default_tree(cls) -> PeakMatchingStrategy:
-        """Return the default strategy used in the search tree."""
-        return cls(
-            matched_coeff=1.0,
-            wrong_intensity_coeff=1.0,
-            missing_coeff=-0.01,
-            extra_coeff=-1.0,
-        )
-
-    def as_kwargs(self) -> dict[str, float]:
-        """Return the coefficients as keyword arguments for PeakMatcher.score()."""
-        return {
-            "matched_coeff": self.matched_coeff,
-            "wrong_intensity_coeff": self.wrong_intensity_coeff,
-            "missing_coeff": self.missing_coeff,
-            "extra_coeff": self.extra_coeff,
-        }
-
-
 class SearchNodeData(BaseModel):
     current_result: Optional[RefinementResult]
     current_phases: list[RefinementPhase]
